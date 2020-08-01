@@ -20,9 +20,9 @@ const ReactionForm = ({ thoughtId }) => {
 
       try {
 
-            await addReaction({
-                variables: { reactionBody, thoughtId }
-            });
+        await addReaction({
+            variables: { reactionBody, thoughtId }
+        });
 
       } catch(e) {
           console.error(e)
