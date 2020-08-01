@@ -1,18 +1,20 @@
 import React from 'react';
 import { Redirect, useParams } from 'react-router-dom';
 import ThoughtList from '../components/ThoughtList';
-import { useQuery } from '@apollo/react-hooks';
+import { useQuery, useMutation } from '@apollo/react-hooks';
 import { QUERY_USER, QUERY_ME } from '../utils/queries';
+import {ADD_FRIEND} from '../utils/Mutations'
 import FriendsList from '../components/FriendsList';
+import ThoughtForm from '../components/ThoughtForm';
 import Auth from '../utils/Auth';
 
 const Profile = () => {
   const { username: userParam} = useParams()
-
+  const [addFriend] = useMutation(ADD_FRIEND)
+  console.log(!userParam)
   const { loading, data } = useQuery(userParam ? QUERY_USER : QUERY_ME, {
     variables: {username: userParam }
   });
-  console.log(userParam)
   const user = data?.me || data?.user || {};
 
   if (Auth.loggedIn() && Auth.getProfile().data.username.toLowerCase() === `${userParam ? userParam.toLowerCase() : ''}`) {
@@ -27,13 +29,28 @@ const Profile = () => {
     return <h4>You need to be logged in to view this page! use the navigation above to log in or sign up!</h4>
   }
 
+  const handleClick = async () => {
+    try {
+      await addFriend({
+        variables: { id: user._id }
+      });
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
   return (
     <div>
       <div className="flex-row mb-3">
         <h2 className="bg-dark text-secondary p-3 display-inline-block">
-          Viewing {userParam ?  `${user.usernames}'s` : 'your'} profile.
+          Viewing {userParam ?  `${user.username}'s` : 'your'} profile.
         </h2>
-      </div>
+        { userParam && (
+        <button className="btn ml-auto" onClick={handleClick}>
+          Add Friend
+        </button>
+         )}
+        </div>
 
       <div className="flex-row justify-space-between mb-3">
         <div className="col-12 mb-3 col-lg-8">
@@ -48,6 +65,7 @@ const Profile = () => {
            />
         }</div>
       </div>
+      <div className="mb-3">{ !userParam && <ThoughtForm />}</div>
     </div>
   );
 };
